@@ -94,7 +94,7 @@ else:
     st.warning(f"{len(anomalies)} anomalous events detected.")
     st.dataframe(
         anomalies[["Date", "Close", "Anomaly_Flag"]].tail(10),
-        use_container_width=True
+        width="stretch"
     )
 
 # ---------------- RISK SECTION ---------------- #
@@ -107,7 +107,7 @@ risk_df = df[[
     "Risk_Score"
 ]].tail(1)
 
-st.dataframe(risk_df, use_container_width=True)
+st.dataframe(risk_df, width="stretch")
 
 # ---------------- FOOTER ---------------- #
 st.caption(

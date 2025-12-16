@@ -1,7 +1,56 @@
+# --------------------
+# Python
+# --------------------
 __pycache__/
-.env
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+
+# --------------------
+# Virtual Environments
+# --------------------
+venv/
+.venv/
+ENV/
+env/
+
+# --------------------
+# Jupyter Notebook
+# --------------------
+.ipynb_checkpoints/
+
+# --------------------
+# Data folders (raw & processed)
+# --------------------
 data/raw/
 data/processed/
-.ipynb_checkpoints/
-venv/
+
+# --------------------
+# OS files
+# --------------------
+.DS_Store
+Thumbs.db
+
+# --------------------
+# Logs
+# --------------------
+*.log
+
+# --------------------
+# Streamlit
+# --------------------
+.streamlit/
+
+# --------------------
+# IDE / Editor
+# --------------------
+.vscode/
+.idea/
+
+# --------------------
+# Build / Cache
+# --------------------
+build/
+dist/
+.eggs/
+*.egg-info/

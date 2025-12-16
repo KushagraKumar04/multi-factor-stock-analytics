@@ -1,12 +1,8 @@
 pandas
 numpy
-matplotlib
-seaborn
-scikit-learn
 yfinance
-xgboost
-tensorflow
-shap
+scikit-learn
 streamlit
+shap
 plotly
 requests
