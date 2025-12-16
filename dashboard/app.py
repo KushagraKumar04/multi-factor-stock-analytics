@@ -1,5 +1,10 @@
 import streamlit as st
 import pandas as pd
+import sys
+import os
+
+sys.path.append(os.path.abspath("."))
+
 
 from src.ingestion.stock_api import fetch_stock_data
 from src.features.technical_indicators import add_technical_indicators
