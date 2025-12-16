@@ -2,6 +2,7 @@ import yfinance as yf
 import pandas as pd
 from datetime import datetime
 import os
+import time
 
 DATA_PATH = "data/raw/stocks"
 
@@ -10,16 +11,21 @@ def fetch_stock_data(
     symbol: str,
     start: str = "2018-01-01",
     end: str = None,
-    interval: str = "1d"
+    interval: str = "1d",
+    retries: int = 3,
+    sleep_seconds: int = 2
 ) -> pd.DataFrame:
     """
-    Fetch historical stock data for NSE stocks using yfinance.
+    Fetch historical stock data for NSE stocks using yfinance
+    with retry and rate-limit handling.
 
     Args:
         symbol (str): Stock symbol (e.g., RELIANCE.NS)
         start (str): Start date (YYYY-MM-DD)
         end (str): End date (YYYY-MM-DD)
         interval (str): Data interval (1d, 1h, etc.)
+        retries (int): Number of retry attempts
+        sleep_seconds (int): Wait time between retries
 
     Returns:
         pd.DataFrame: Stock OHLCV data
@@ -28,16 +34,29 @@ def fetch_stock_data(
     if end is None:
         end = datetime.today().strftime("%Y-%m-%d")
 
-    ticker = yf.Ticker(symbol)
-    df = ticker.history(start=start, end=end, interval=interval)
+    last_exception = None
 
-    if df.empty:
-        raise ValueError(f"No data returned for symbol {symbol}")
+    for attempt in range(retries):
+        try:
+            ticker = yf.Ticker(symbol)
+            df = ticker.history(start=start, end=end, interval=interval)
 
-    df.reset_index(inplace=True)
-    df["Symbol"] = symbol
+            if df.empty:
+                raise ValueError(f"No data returned for symbol {symbol}")
 
-    return df
+            df.reset_index(inplace=True)
+            df["Symbol"] = symbol
+
+            return df
+
+        except Exception as e:
+            last_exception = e
+            time.sleep(sleep_seconds)
+
+    # Final failure after retries
+    raise RuntimeError(
+        f"Failed to fetch data for {symbol} after {retries} retries"
+    ) from last_exception
 
 
 def save_raw_data(df: pd.DataFrame, symbol: str):

@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 import sys
 import os
+import numpy as np
 
 sys.path.append(os.path.abspath("."))
-
 
 from src.ingestion.stock_api import fetch_stock_data
 from src.features.technical_indicators import add_technical_indicators
@@ -32,7 +32,7 @@ symbol = st.sidebar.selectbox(
 )
 
 # ---------------- DATA PIPELINE ---------------- #
-@st.cache_data
+@st.cache_data(ttl=3600)  # cache for 1 hour to avoid rate limits
 def load_data(symbol):
     df = fetch_stock_data(symbol, start=START_DATE)
     df = add_technical_indicators(df)
@@ -44,7 +44,32 @@ def load_data(symbol):
     return df
 
 
-df = load_data(symbol)
+# ---------------- SAFE DATA LOADING ---------------- #
+try:
+    df = load_data(symbol)
+    data_source = "Live Market Data"
+except Exception as e:
+    st.error("⚠️ Live market data temporarily unavailable (API rate limit).")
+    st.info("Showing demo data to keep the dashboard operational.")
+
+    # -------- FALLBACK DEMO DATA -------- #
+    df = pd.DataFrame({
+        "Date": pd.date_range("2023-01-01", periods=200),
+        "Close": np.cumsum(np.random.normal(0, 1, 200)) + 100,
+    })
+
+    df["Returns"] = df["Close"].pct_change()
+    df["Volatility_20"] = df["Returns"].rolling(20).std()
+
+    df = add_technical_indicators(df)
+    df = add_statistical_features(df)
+    df = detect_market_regime(df)
+    df = label_regimes(df)
+    df = add_risk_metrics(df)
+    df = add_anomaly_flags(df)
+
+    data_source = "Demo Data (Fallback)"
+
 
 # ---------------- KPI ROW ---------------- #
 latest = df.iloc[-1]
@@ -55,6 +80,8 @@ col1.metric("Last Price", f"₹ {latest['Close']:.2f}")
 col2.metric("Market Regime", latest["Market_Regime"])
 col3.metric("Sharpe Ratio", f"{latest['Sharpe_Ratio']:.2f}")
 col4.metric("Risk Score", f"{latest['Risk_Score']:.1f}")
+
+st.caption(f"Data Source: **{data_source}**")
 
 # ---------------- PRICE CHART ---------------- #
 st.subheader("📈 Price Trend")
