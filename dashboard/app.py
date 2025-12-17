@@ -143,5 +143,5 @@ st.dataframe(risk_df, width="stretch")
 
 # ---------------- FOOTER ---------------- #
 st.caption(
-    "Built using Python, Streamlit, and advanced market analytics | For Data Analyst roles"
+    "Built using Python, Streamlit, and advanced market analytics | Author: Kushagra Kumar"
 )
